@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 45cc5db38a8b944c3839482b9541ba11
+timeCreated: 1517638915
+licenseType: Free
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Coral Reef
+  fontNames:
+  - Coral Reef
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

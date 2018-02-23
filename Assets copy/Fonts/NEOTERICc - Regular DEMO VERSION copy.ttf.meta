@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: 176a6d96194ca4127ad512570143dc3c
+timeCreated: 1517638915
+licenseType: Free
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: NEOTERIC
+  fontNames:
+  - NEOTERIC
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 11ad5d1e18ac6421f815b7936220ad88, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
