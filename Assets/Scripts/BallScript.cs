@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// --> / <--  = start / end stuff I want to get working
+// --> / <--  = start / end broken stuff I want to get working
 
 // ~~~ 		= old stuff I want to keep just in case
 
@@ -11,37 +11,39 @@ public class BallScript : MonoBehaviour {
 
 	[SerializeField]																	// makes it editable in the inspector
 	float forceValue = 4.5f; 															// so we can edit this more easily
+
 	public GameObject newBall; 															// the balls that will be added
 	Rigidbody2D myBody;																	// the rigidbody attached to the gameobject
 	GoalScript gs;																		// this is a ref to the goalscript
-	public PaddleScript[] paddles;
+	public PaddleScript[] paddles;														// this a ref to the paddles
 	public float radius;																// the radius
 	private bool rotating;																// is the ball rotating
 	private float angle;																// the angle
 	public float rotationSpeed;															// how fast it will rotate
-	public Transform paddle1, paddle2, topWall, bottomWall;
-	float wallBounceVelocity;
-	float paddleBounceVelocity;
-	float wallVelocityMod;
-	float paddleVelocityMod;
+
+	public Transform paddle1, paddle2, topWall, bottomWall;								// the transforms of the walls and player paddles
+	public float wallBounceVelocity;													// ball velocity is multiplied by this number when it hits it 
+	public float paddleBounceVelocity;													// ball velocity is multiplied by this number when it hits it 
+	public float wallVelocityMod;														// the additional force multiplied to the velocity
+	public float paddleVelocityMod;														// the additional force multiplied to the velocity
 
 
-	[Range(-0.9f, 0.9f)]																// limiter range for the inspector
+	[Range(-1.9f, 1.9f)]																// limiter range for the inspector
 	public float dotProdLimiterMinY;													// dot prod minY value
 
-	[Range(-0.9f, 0.9f)]																// limiter range for the inspector
+	[Range(-1.9f, 1.9f)]																// limiter range for the inspector
 	public float dotProdLimiterMaxY;													// dot prod maxY value
 
-	[Range(-0.9f, 0.9f)]																// limiter range for the inspector
+	[Range(-1.9f, 1.9f)]																// limiter range for the inspector
 	public float dotProdLimiterMinX;													// dot prod minX value
 
-	[Range(-0.9f, 0.9f)]																// limiter range for the inspector
+	[Range(-1.9f, 1.9f)]																// limiter range for the inspector
 	public float dotProdLimiterMaxX;													// dot prod maxX value
 
-	[Range(-0.9f, 0.9f)]																// modification range for the inspector (will be added to velocity)
+	[Range(-1.9f, 1.9f)]																// modification range for the inspector (will be added to velocity)
 	public float dotProdPaddleMod;														// paddle modifier value
 
-	[Range(-0.9f, 0.9f)]																// modification range for the inspector (will be added to velocity)
+	[Range(-1.9f, 1.9f)]																// modification range for the inspector (will be added to velocity)
 	public float dotProdWallMod;														// wall modifier value
 
 
@@ -50,7 +52,7 @@ public class BallScript : MonoBehaviour {
 
 
 	// public int [] limiterArray;
-	// ~~~ public KeyCode newBall = KeyCode.Space;  //assigning the key for the ball respawn
+	// ~~~ public KeyCode newBall = KeyCode.Space;  //assigning the key for the ball respawn ----USED FOR TESTING BALL RESPAWN
 
 
 
@@ -73,149 +75,91 @@ public class BallScript : MonoBehaviour {
 
 
 	void Rotate(){ 																								//Rotate function
-		angle += rotationSpeed * Time.deltaTime; 
-		transform.localPosition = new Vector2 (Mathf.Cos (angle), Mathf.Sin (angle)) * radius;
+		angle += rotationSpeed * Time.deltaTime; 																//rotate it over time
+		transform.localPosition = new Vector2 (Mathf.Cos (angle), Mathf.Sin (angle)) * radius;					//based on it's previous loctation
 	}//END ROTATE
 
-	void OnCollisionEnter2D (Collision2D other) { 	
-		float dotprodPaddle1 = Vector3.Dot (transform.position.normalized, paddle1.position.normalized);
-		float dotprodPaddle2 = Vector3.Dot (transform.position.normalized, paddle2.position.normalized);
-		float dotprodTopWall = Vector3.Dot(transform.position.normalized, topWall.position.normalized);
-		float dotprodBottomWall = Vector3.Dot(transform.position.normalized, bottomWall.position.normalized);
+	void OnCollisionEnter2D (Collision2D other) { 																// collision function, change velocity force of ball depending on what it hits
+		float dotprodPaddle1 = Vector3.Dot (transform.position.normalized, paddle1.position.normalized); 		// calc of the dot prod of player1 paddle and the ball velocity 
+		float dotprodPaddle2 = Vector3.Dot (transform.position.normalized, paddle2.position.normalized);		// calc of the dot prod of player2 paddle and the ball velocity 
+		float dotprodTopWall = Vector3.Dot(transform.position.normalized, topWall.position.normalized);			// calc of the dot prod of top wall and the ball velocity 
+		float dotprodBottomWall = Vector3.Dot(transform.position.normalized, bottomWall.position.normalized);	// calc of the dot prod of top wall and the ball velocity 
 
-		// collision function, change velocity force of ball depending on what it hits
-		if (other.transform.name == "WallTop") { 																// if the name of the object is 'WallTop' 
-			myBody.velocity = myBody.velocity * wallBounceVelocity;	
-			if (dotprodTopWall < dotProdLimiterMaxY || dotprodTopWall > dotProdLimiterMinY){
-				wallBounceVelocity = wallVelocityMod * -1;
-			}// then multiply the ball's velocity by x
+	
+		if (other.transform.name == "WallTop") { 																// if the name of the object is 'WallTop' ...
+
+			if (dotprodTopWall < dotProdLimiterMinY 															// if the dot prod is less than the min set Y value 
+				|| dotprodTopWall > dotProdLimiterMaxY){														// ...OR is greater than the max set Y value
+				wallBounceVelocity = -1* (wallBounceVelocity + dotProdWallMod);									// then the wallBounceVelocity = (itself + the dotproductmodifier) * -1
+			}//end top wall dot prod
+			myBody.velocity = myBody.velocity * wallBounceVelocity * wallVelocityMod;							// and now the ball's velocity = (itself) * (wallBounceVelocity)* (Velocitymodifier)
 			if (rotating) {																						// if it's rotating and it hits a paddle
 				rotating = false;																				// set the bool to false
 				transform.parent = null;																		// and un-parent it's transform
-			}
+			}//end if rotating
 		}//end wall top bounce force
+
+
 		if (other.transform.name == "WallBottom") {																// if the name of the object is 'WallBottom' 
-			myBody.velocity = myBody.velocity * wallBounceVelocity;															// then multiply the ball's velocity by x
-			if (dotprodBottomWall < dotProdLimiterMinY || dotprodBottomWall > dotProdLimiterMaxY) {
-				wallBounceVelocity = wallVelocityMod;
-			}
+		
+			if (dotprodBottomWall < dotProdLimiterMinY 															// if the dot prod is less than the min set Y value 
+				|| dotprodBottomWall > dotProdLimiterMaxY) {													// ...OR is greater than the max set Y value
+				wallBounceVelocity = wallBounceVelocity + dotProdWallMod;										// then the wallBounceVelocity = (itself) + (the dotproductmodifier) 
+			}//end bottom wall dot prod
+			myBody.velocity = myBody.velocity * wallBounceVelocity * wallVelocityMod;							// and now the ball's velocity = (itself) * (wallBounceVelocity)* (Velocitymodifier)
 			if (rotating) {																						// if it's rotating and it hits a paddle
 				rotating = false;																				// set the bool to false
 				transform.parent = null;																		// and un-parent it's transform
 			}//end if rotating
 		}//end wall bottom bounce force
-		if (other.gameObject.name == "Player1") {																	// if the name is player1 
-			myBody.velocity = myBody.velocity * 1.1f;	
-			if (dotprodPaddle1 < dotProdLimiterMinX || dotprodPaddle1> dotProdLimiterMaxX) {
-				paddleBounceVelocity = paddleVelocityMod;													// --> then multiply the ball's velocity by x : (NullReferenceException: Object reference not set to an instance of an object)
+
+
+		if (other.gameObject.name == "Player1") {																// if the name is player1 
+			
+			if (dotprodPaddle1 < dotProdLimiterMinX 															// if the dot prod is less than the min set X value 
+				|| dotprodPaddle1> dotProdLimiterMaxX) {														// ...OR is greater than the max set X value
+				paddleBounceVelocity = paddleBounceVelocity + dotProdPaddleMod;									// then the paddleBounceVelocity = (itself) + (the dotproductmodifier) 								
+			}//end paddle1 dot prod
+			myBody.velocity = myBody.velocity * paddleBounceVelocity * paddleVelocityMod;						// and now the ball's velocity = (itself) * (wallBounceVelocity)* (Velocitymodifier)
 			if (rotating) {																						// if it's rotating and it hits a paddle
 				rotating = false;																				// set the bool to false
 				transform.parent = null;																		// and un-parent it's transform
 			}//end if rotating
-		}//end paddle bounce force
-			if (other.gameObject.name == "Player2") {															// if the name is player2
-			if (dotprodPaddle2 < dotProdLimiterMinX || dotprodPaddle2> dotProdLimiterMaxX) {
-				paddleBounceVelocity = paddleVelocityMod * -1;
-			}
-			myBody.velocity = myBody.velocity * 1.1f;															// --> then multiply the ball's velocity by x : (NullReferenceException: Object reference not set to an instance of an object)
-			if (rotating) {																						// if it's rotating and it hits a paddle
+		}//end paddle1 bounce force
+	
+				
+		if (other.gameObject.name == "Player2") {																// if the name is player2
+
+			if (dotprodPaddle2 < dotProdLimiterMinX 															// if the dot prod is less than the min set X value 
+				|| dotprodPaddle2> dotProdLimiterMaxX) {														// ...OR is greater than the max set X value
+				paddleBounceVelocity = -1*(paddleBounceVelocity + dotProdPaddleMod);							// then the paddleBounceVelocity = (itself + the dotproductmodifier) * -1
+			}//end paddle2 dot prod
+			myBody.velocity = myBody.velocity * paddleBounceVelocity * paddleVelocityMod;						// and now the ball's velocity = (itself) * (wallBounceVelocity)* (Velocitymodifier)
+				if (rotating) {																					// if it's rotating and it hits a paddle
 				rotating = false;																				// set the bool to false
 				transform.parent = null;																		// and un-parent it's transform
 			}//end if rotating
 		}//end paddle bounce force
-	}
-//// -->  GET THIS WORKING
+	}//END ON COLLISION ENTER 2D
 
 
-//
-//		if (Vector3.Dot(bodyA.position.normalized, transform.forward.normalized) > 0.5f) {
-//			bodyA.gameObject.SetActive(true);
-//		} else {
-//			bodyA.gameObject.SetActive(false);
-//		}
-//	}
-
-//		if ((paddle.transform.position, ball.transform.position * dotprodPaddle) > dotProdLimiterMinX){
-//				myBody.velocity = myBody.velocity + dotProdPaddleMod;
-//				}//end dot prod paddle limiter minX
-//		if ((paddle.transform.position, ball.transform.position * dotprodPaddle) > dotProdLimiterMaxX){
-//				myBody.velocity = myBody.velocity + dotProdPaddleMod;
-//				}//end dot prod paddle limiter maxX
-//		if ((paddle.transform.position, ball.transform.position * dotprodPaddle) > dotProdLimiterMinY){
-//				myBody.velocity = myBody.velocity + dotProdPaddleMod;
-//				}//end dot prod paddle limiter minY
-//		if ((wall.transform.position, ball.transform.position * dotprodWall) > dotProdLimiterMaxY);{
-//				myBody.velocity = myBody.velocity + dotProdPaddleMod));
-//				}//end dot prod paddle limiter maxY
-//			}//end dotprod paddle
-//		
-//		
-//		if ((wall.transform.position, ball.transform.position * dotprodWall) > dotProdLimiterMinX);{
-//				myBody.velocity = myBody.velocity +dotProdWallMod;
-//				}//end dot prod wall limiter minX
-//		if ((wall.transform.position, ball.transform.position * dotprodWall) > dotProdLimiterMaxX);{
-//				myBody.velocity = myBody.velocity +dotProdWallMod;
-//				}//end dot prod wall limiter maxX
-//		if ((wall.transform.position, ball.transform.position * dotprodWall) > dotProdLimiterMinY);{
-//				myBody.velocity = myBody.velocity + dotProdWallMod));
-//				}//end dot prod wall limiter minY
-//		if ((wall.transform.position, ball.transform.position * dotprodWall) > dotProdLimiterMaxY);{
-//				myBody.velocity = myBody.velocity + dotProdWallMod));
-//				}//end dot prod wall limiter maxY
-//
-//			}//end dotprod wall
-//// <-- UNTIL HERE
-	
-
-		/// //// -->  GET THIS WORKING
-		//		float dotprodPaddle = Vector3.Dot (ball.position.normalized, paddle.position.normalized);
-		//		if ((paddle.transform.position, ball.transform.position * dotprodPaddle) > dotProdLimiterMinX);{
-		//				myBody.velocity = myBody.velocity + dotProdPaddleMod;
-		//				}//end dot prod paddle limiter minX
-		//		if ((paddle.transform.position, ball.transform.position * dotprodPaddle) > dotProdLimiterMaxX);{
-		//				myBody.velocity = myBody.velocity + dotProdPaddleMod;
-		//				}//end dot prod paddle limiter maxX
-		//		if ((paddle.transform.position, ball.transform.position * dotprodPaddle) > dotProdLimiterMinY);{
-		//				myBody.velocity = myBody.velocity + dotProdPaddleMod;
-		//				}//end dot prod paddle limiter minY
-		//		if ((wall.transform.position, ball.transform.position * dotprodWall) > dotProdLimiterMaxY);{
-		//				myBody.velocity = myBody.velocity + dotProdPaddleMod));
-		//				}//end dot prod paddle limiter maxY
-		//			}//end dotprod paddle
-		//		
-		//		float dotprodWall = Vector3.Dot (ball.position.normalized, paddle.position.normalized);
-		//		if ((wall.transform.position, ball.transform.position * dotprodWall) > dotProdLimiterMinX);{
-		//				myBody.velocity = myBody.velocity +dotProdWallMod;
-		//				}//end dot prod wall limiter minX
-		//		if ((wall.transform.position, ball.transform.position * dotprodWall) > dotProdLimiterMaxX);{
-		//				myBody.velocity = myBody.velocity +dotProdWallMod;
-		//				}//end dot prod wall limiter maxX
-		//		if ((wall.transform.position, ball.transform.position * dotprodWall) > dotProdLimiterMinY);{
-		//				myBody.velocity = myBody.velocity + dotProdWallMod));
-		//				}//end dot prod wall limiter minY
-		//		if ((wall.transform.position, ball.transform.position * dotprodWall) > dotProdLimiterMaxY);{
-		//				myBody.velocity = myBody.velocity + dotProdWallMod));
-		//				}//end dot prod wall limiter maxY
-		//
-		//			}//end dotprod wall
-		//// <-- UNTIL HERE
-	
-	} // END ON COLLISION
 		
-	public void Reset() {																								// Restart function,  to set the ball position and restart the ball movement
-		myBody = GetComponent<Rigidbody2D>();																			// again set the rb to mybody
-		transform.position = new Vector2(0,0);																			// and again, no force or movement
+	public void Reset() {																						// Restart function,  to set the ball position and restart the ball movement
+		myBody = GetComponent<Rigidbody2D>();																	// again set the rb to mybody
+		transform.position = new Vector2(0,0);																	// and again, no force or movement
 
-		bool right = Random.value > 0.5f; 																				// basic 50/50 chances
-		float startingAngle;																							// the starting angle for the reset ball
-		if (right) {																									// if it's going right
-			startingAngle = Random.Range (-30, 30);																		// then set the range for the angle is goes off from the starting point if it's going right
-		} else {																										// else (if its going left)
-			startingAngle = Random.Range (150, 210);																	// set the range for the angle is goes off from the starting point if it's going left
-		}//end else 
+		bool right = Random.value > 0.5f; 																		// basic 50/50 chances
+		float startingAngle;																					// the starting angle for the reset ball
+		if (right) {																							// if it's going right
+			startingAngle = Random.Range (-30, 30);																// then set the range for the angle is goes off from the starting point if it's going right
+		} else {																								// else (aka, if its going left)
+			startingAngle = Random.Range (150, 210);															// set the range for the angle is goes off from the starting point if it's going left
+		}//end else
 	
-		startingAngle *= Mathf.Deg2Rad;																					// starting angle
-		myBody.velocity = new Vector2 (Mathf.Cos (startingAngle), Mathf.Sin (startingAngle)) * forceValue * GameManager.instance.amountZoomedOut;
+		startingAngle *= Mathf.Deg2Rad;																			// starting angle
+		myBody.velocity = new Vector2 (Mathf.Cos (startingAngle), Mathf.Sin (startingAngle)) * forceValue; 		// ***?*?*?***
+
+//	--->	myBody.velocity = new Vector2 (Mathf.Cos (startingAngle), Mathf.Sin (startingAngle)) * forceValue * GameManager.instance.amountZoomedOut; //nul ref exception, not set to inistance of object
 
 	}//END RESET
 }//END SCRIPT

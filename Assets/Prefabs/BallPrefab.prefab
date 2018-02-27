@@ -86,14 +86,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 1970667576299564}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 773a5cf39c060418a97f8ab604dc3db2, type: 3}
+  m_Script: {fileID: 11500000, guid: 871d46c89ebb84f298abb7769ff952fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  forceValue: 10
+  forceValue: 4.5
   newBall: {fileID: 1970667576299564}
   paddles: []
-  radius: 6
-  rotationSpeed: 5
+  radius: 4
+  rotationSpeed: 50
+  paddle1: {fileID: 0}
+  paddle2: {fileID: 0}
+  topWall: {fileID: 0}
+  bottomWall: {fileID: 0}
+  wallBounceVelocity: 1.1
+  paddleBounceVelocity: 1.1
+  wallVelocityMod: 1
+  paddleVelocityMod: 1.1
+  dotProdLimiterMinY: -0.8
+  dotProdLimiterMaxY: 0.8
+  dotProdLimiterMinX: -0.8
+  dotProdLimiterMaxX: 0.8
+  dotProdPaddleMod: 0.9
+  dotProdWallMod: 0.9
 --- !u!212 &212287573315876396
 SpriteRenderer:
   m_ObjectHideFlags: 1

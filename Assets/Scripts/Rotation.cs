@@ -24,7 +24,8 @@ public class Rotation : MonoBehaviour { 											// **SCRIPT TO MAKE AN OBJECT
 
 	public Vector3 PointOnCircle(float radius, float angle) {													//***???***
 		float angleInRadians = angle * Mathf.Deg2Rad; 															// mathf.deg2rad is a constant value of 180/pi, (stands for degrees 2 radians)
-		return new Vector3 (GameManager.instance.amountZoomedOut* radius * Mathf.Cos (angleInRadians),			// x value
+		return new Vector3 (radius * Mathf.Cos (angleInRadians),			// x value
+//		return new Vector3 (GameManager.instance.amountZoomedOut* radius * Mathf.Cos (angleInRadians),			// x value
 			radius * Mathf.Sin (angleInRadians), 																// y value
 			0f); 																								// z value
 	}//end PointOnCircle 

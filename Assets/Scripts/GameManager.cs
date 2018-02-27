@@ -84,7 +84,7 @@ public class GameManager: MonoBehaviour {
 		}//end for ball loop
 
 // -->		playerOneScore = 0; 																				// -->set player one's starting score to 0
-// -->		playerTwoScore = 0;																						// -->set player two's starting score to 0
+// -->		playerTwoScore = 0;																					// -->set player two's starting score to 0
 		balls = new List<BallScript>(); 																		// new list of balls
 		BallScript startingBall = Instantiate (ballPrefab).GetComponent<BallScript> (); 						// instantiate the starting ball?
 		balls.Add (startingBall); 																				// add to the starting ball?
